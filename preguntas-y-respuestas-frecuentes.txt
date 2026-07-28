@@ -1,0 +1,207 @@
+1. ¿Cómo coordino una instalación de GPS?
+
+Respuesta:
+Para coordinar una instalación, necesitamos que nos indiques la empresa, cantidad de vehículos, ubicación donde estarán disponibles, datos de contacto del responsable y horarios posibles. Con esa información coordinamos un turno con el área técnica.
+
+----------------------------------------
+
+2. ¿Qué datos necesito enviar para instalar un equipo?
+
+Respuesta:
+Necesitamos patente o identificación del vehículo, tipo de unidad, ubicación de instalación, nombre y teléfono del responsable en el lugar, y disponibilidad horaria. También es útil saber si el vehículo ya tuvo otro equipo instalado anteriormente.
+
+----------------------------------------
+
+3. ¿Cuánto demora una instalación?
+
+Respuesta:
+El tiempo depende del tipo de vehículo y del equipo a instalar. En general, una instalación GPS simple puede demorar entre 45 minutos y 2 horas. Si incluye accesorios, cámaras, sensores o pruebas especiales, puede llevar más tiempo.
+
+----------------------------------------
+
+4. ¿Puedo instalar varios vehículos el mismo día?
+
+Respuesta:
+Sí, se puede coordinar la instalación de varias unidades el mismo día. Para eso necesitamos saber cuántos vehículos estarán disponibles, en qué lugar y durante qué franja horaria. El equipo técnico confirmará la planificación.
+
+----------------------------------------
+
+5. ¿La instalación se hace en nuestras oficinas o en otro lugar?
+
+Respuesta:
+Depende de la disponibilidad técnica y de la zona. En muchos casos podemos coordinar la instalación en la base del cliente, taller, playa de estacionamiento o punto operativo. El área técnica debe confirmar la cobertura y disponibilidad.
+
+----------------------------------------
+
+6. ¿Qué pasa si el vehículo no está disponible el día del turno?
+
+Respuesta:
+Si la unidad no está disponible, se debe reprogramar la instalación. Recomendamos avisar con la mayor anticipación posible para evitar demoras y poder reasignar el turno.
+
+----------------------------------------
+
+7. ¿Cómo solicito mantenimiento de un equipo GPS?
+
+Respuesta:
+Para solicitar mantenimiento, indicá la patente o identificación del vehículo, el problema observado, desde cuándo ocurre y un contacto responsable. Con esa información se genera la solicitud para revisión técnica.
+
+----------------------------------------
+
+8. ¿Qué datos debo mandar para revisar un problema de GPS?
+
+Respuesta:
+Necesitamos patente o nombre del móvil, descripción del problema, fecha y hora aproximada en que se detectó, y si el vehículo estuvo en uso o detenido. También sirve informar si hubo trabajos eléctricos, cambio de batería o reparación reciente.
+
+----------------------------------------
+
+9. Mi vehículo no actualiza posición, ¿qué puede ser?
+
+Respuesta:
+Puede deberse a falta de señal GPS, falta de señal celular, equipo apagado, corte de alimentación, batería baja, zona sin cobertura o una falla técnica. El área de soporte puede revisar la última comunicación y orientar el siguiente paso.
+
+----------------------------------------
+
+10. El vehículo aparece en una ubicación vieja, ¿qué hago?
+
+Respuesta:
+Primero verificá si la fecha y hora de la última posición son recientes. Si la última posición es antigua, puede que el equipo no esté transmitiendo. En ese caso se debe solicitar revisión con la patente o identificación del móvil.
+
+----------------------------------------
+
+11. ¿Por qué un vehículo aparece detenido si está circulando?
+
+Respuesta:
+Puede haber demora en la actualización, pérdida temporal de señal, mala cobertura celular, problema de GPS o una configuración incorrecta. Soporte puede verificar los últimos datos recibidos y confirmar si el equipo está reportando correctamente.
+
+----------------------------------------
+
+12. ¿Por qué la velocidad que muestra el sistema no coincide exactamente con el velocímetro?
+
+Respuesta:
+La velocidad GPS puede tener pequeñas diferencias respecto al velocímetro del vehículo. El sistema calcula velocidad a partir de posición satelital y transmisión de datos, mientras que el velocímetro usa sensores propios del vehículo.
+
+----------------------------------------
+
+13. ¿Cómo pido el alta de un nuevo vehículo en la plataforma?
+
+Respuesta:
+Para dar de alta un vehículo, enviá los datos de la unidad, patente, empresa a la que pertenece, tipo de vehículo y datos del equipo si ya fue instalado. Si todavía no tiene equipo, primero se debe coordinar instalación.
+
+----------------------------------------
+
+14. ¿Cómo solicito la baja de un vehículo?
+
+Respuesta:
+Para solicitar una baja, indicá empresa, patente o identificación del vehículo y motivo de la baja. El equipo administrativo o técnico confirmará si corresponde retirar el dispositivo, desactivar el servicio o reasignarlo.
+
+----------------------------------------
+
+15. ¿Se puede cambiar un GPS de un vehículo a otro?
+
+Respuesta:
+Sí, se puede hacer una reinstalación o traslado de equipo. Debe coordinarse con soporte o técnica, indicando el vehículo origen, el vehículo destino y el lugar donde se realizará el trabajo.
+
+----------------------------------------
+
+16. ¿Qué hago si cambiaron la batería del vehículo?
+
+Respuesta:
+Si después de un cambio de batería el equipo dejó de transmitir, puede haberse desconectado la alimentación del GPS. Informá la patente y la fecha del cambio para que soporte revise el estado del equipo.
+
+----------------------------------------
+
+17. ¿Qué hago si el vehículo estuvo en taller?
+
+Respuesta:
+Si el vehículo estuvo en taller y luego el GPS dejó de funcionar, es posible que se haya desconectado o manipulado el cableado. Indicá patente, fecha del trabajo y taller interviniente para solicitar revisión.
+
+----------------------------------------
+
+18. ¿Cómo pido usuario para acceder a la plataforma?
+
+Respuesta:
+Para crear un usuario, necesitamos nombre y apellido, email, empresa, perfil o permisos requeridos, y autorización de un responsable. No se crean usuarios sin validación de la empresa o cuenta correspondiente.
+
+----------------------------------------
+
+19. ¿Cómo recupero mi contraseña?
+
+Respuesta:
+Si olvidaste tu contraseña, podés solicitar recuperación o blanqueo de clave. Por seguridad, soporte puede pedir validación de identidad o autorización de un responsable de la cuenta.
+
+----------------------------------------
+
+20. ¿Puedo limitar qué vehículos ve cada usuario?
+
+Respuesta:
+Sí, los usuarios pueden tener permisos según empresa, grupo, flota o vehículos asignados. Para modificar permisos se debe solicitar el cambio indicando usuario, empresa y unidades que debe visualizar.
+
+----------------------------------------
+
+21. ¿Cómo solicito un reporte?
+
+Respuesta:
+Indicá qué tipo de reporte necesitás, período de fechas, empresa o vehículo, y formato deseado si corresponde. Algunos reportes pueden generarse desde la plataforma y otros pueden requerir asistencia de soporte.
+
+----------------------------------------
+
+22. ¿Qué reportes se pueden obtener?
+
+Respuesta:
+Según la configuración del sistema, se pueden obtener reportes de recorridos, paradas, velocidad, eventos, kilómetros, actividad, posiciones históricas, excesos de velocidad y otros indicadores operativos.
+
+----------------------------------------
+
+23. ¿Puedo ver recorridos históricos?
+
+Respuesta:
+Sí, la plataforma permite consultar recorridos históricos según disponibilidad de datos y permisos del usuario. Para solicitar ayuda, indicá patente, fecha y rango horario aproximado.
+
+----------------------------------------
+
+24. ¿Por cuánto tiempo se guarda la información histórica?
+
+Respuesta:
+El tiempo de conservación depende de la configuración del servicio, capacidad del servidor y política contratada. Para confirmar el período disponible, soporte debe verificar la configuración de la cuenta.
+
+----------------------------------------
+
+25. ¿Qué hago si veo datos incorrectos en un vehículo?
+
+Respuesta:
+Reportá el caso indicando patente, fecha, hora y qué dato parece incorrecto. Puede tratarse de una configuración, error de carga, problema de comunicación o evento mal interpretado.
+
+----------------------------------------
+
+26. ¿Se pueden configurar alertas?
+
+Respuesta:
+Sí, se pueden configurar alertas según las funcionalidades disponibles: velocidad, ingreso o salida de zonas, desconexión, eventos, paradas, movimientos no autorizados u otros criterios. La disponibilidad depende del equipo y del servicio contratado.
+
+----------------------------------------
+
+27. ¿Cómo solicito una geocerca o zona?
+
+Respuesta:
+Para crear una zona o geocerca, indicá nombre de la zona, dirección o coordenadas, radio aproximado o límites, empresa asociada y qué alerta o uso tendrá. Soporte o administración puede cargarla según corresponda.
+
+----------------------------------------
+
+28. ¿Puedo recibir alertas por WhatsApp o email?
+
+Respuesta:
+Depende de la configuración del sistema y del servicio contratado. Algunas alertas pueden enviarse por email, plataforma o integraciones externas. Para WhatsApp puede requerirse una integración adicional.
+
+----------------------------------------
+
+29. ¿Qué hago si sospecho que un equipo fue desconectado?
+
+Respuesta:
+Informá la patente, fecha y hora aproximada del evento. Soporte puede revisar la última comunicación, eventos recibidos y estado del equipo para determinar si hubo desconexión, falta de alimentación o pérdida de señal.
+
+----------------------------------------
+
+30. ¿Cuándo debo hablar con soporte humano?
+
+Respuesta:
+Debés pedir soporte humano cuando el problema requiere coordinación de turno, revisión técnica, permisos de usuario, baja o alta de vehículos, cambios administrativos, reclamos, fallas persistentes o situaciones urgentes de seguridad.
