@@ -129,9 +129,13 @@ No ocultar errores ni declarar éxito si alguna comprobación relevante falla.
 ## Git
 
 - Revisar `git status` antes de editar.
+- Antes de desarrollar cualquier tarea nueva, crear y cambiar a una branch
+  específica cuyo nombre describa claramente la tarea.
+- Nunca desarrollar ni crear commits directamente en `main`.
 - Asumir que los cambios preexistentes pertenecen al usuario.
-- No cambiar de branch, hacer stage, commit, push, reset, restore, rebase ni
-  modificar el historial salvo pedido explícito.
+- Fuera de la creación obligatoria de la branch de tarea, no cambiar de branch,
+  hacer stage, commit, push, reset, restore, rebase ni modificar el historial
+  salvo pedido explícito.
 - Si se solicita un commit, usar Conventional Commits.
 - Nunca agregar atribución de IA ni `Co-Authored-By`.
 
