@@ -2,6 +2,7 @@ import {
   generateConversationSummary,
   generateGeminiReply,
   type GeminiConversationMessage,
+  type GeminiReply,
 } from "@/lib/gemini";
 import {
   getVehicleStatusForAgent,
@@ -15,15 +16,25 @@ import {
 } from "@/lib/whatsapp-conversation-store";
 import {
   addOutgoingMessage,
+  claimHumanHandoffOffer,
+  completeHumanHandoffOffer,
   getRecentConversationExchanges,
   getReplyDestination,
   markIncomingAgentToolUse,
   markIncomingHistoryLookup,
+  releaseHumanHandoffOffer,
   type IncomingWhatsAppMessage,
   setIncomingAutoReplyResult,
 } from "@/lib/whatsapp-message-store";
 import { getAutomaticReplyMetaFailureReason } from "@/lib/whatsapp-meta-error";
 import { searchFaqForAgent } from "@/lib/faq/store";
+import {
+  buildHumanHandoffLink,
+  buildHumanHandoffOfferPayload,
+  HUMAN_HANDOFF_CONFIRM_BUTTON_ID,
+  HUMAN_HANDOFF_OFFER_TEXT,
+  isHumanHandoffConfigured,
+} from "@/lib/whatsapp-human-handoff";
 
 type MetaSuccessResponse = {
   messages?: Array<{
@@ -94,7 +105,11 @@ async function waitForGeminiRetry(messageId: string, delayMs: number) {
   }
 }
 
-async function sendWhatsAppReply(to: string, message: string) {
+async function sendWhatsAppMessage(
+  to: string,
+  messagePayload: Record<string, unknown>,
+  storedText: string,
+) {
   const { accessToken, messagesUrl } = getWhatsAppConfig();
   const response = await fetch(
     messagesUrl,
@@ -108,10 +123,7 @@ async function sendWhatsAppReply(to: string, message: string) {
         messaging_product: "whatsapp",
         recipient_type: "individual",
         to,
-        type: "text",
-        text: {
-          body: message,
-        },
+        ...messagePayload,
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(15_000),
@@ -146,11 +158,32 @@ async function sendWhatsAppReply(to: string, message: string) {
   await addOutgoingMessage({
     id: messageId,
     to,
-    text: message,
+    text: storedText,
     createdAt,
   });
 
   return messageId;
+}
+
+async function sendWhatsAppReply(to: string, message: string) {
+  return sendWhatsAppMessage(
+    to,
+    {
+      type: "text",
+      text: {
+        body: message,
+      },
+    },
+    message,
+  );
+}
+
+async function sendHumanHandoffOffer(to: string) {
+  return sendWhatsAppMessage(
+    to,
+    buildHumanHandoffOfferPayload(),
+    HUMAN_HANDOFF_OFFER_TEXT,
+  );
 }
 
 async function updateConversationSummary(sessionId: string) {
@@ -171,6 +204,15 @@ async function updateConversationSummary(sessionId: string) {
 export async function processAutomaticReply(
   incomingMessage: IncomingWhatsAppMessage,
 ) {
+  if (
+    incomingMessage.type === "interactive" &&
+    incomingMessage.interactiveReplyId ===
+      HUMAN_HANDOFF_CONFIRM_BUTTON_ID
+  ) {
+    await processHumanHandoffConfirmation(incomingMessage);
+    return;
+  }
+
   if (incomingMessage.type !== "text") {
     return;
   }
@@ -198,7 +240,7 @@ export async function processAutomaticReply(
         },
       ],
     );
-    let reply: string;
+    let reply: GeminiReply;
     let fallbackReason: string | undefined;
 
     try {
@@ -223,6 +265,7 @@ export async function processAutomaticReply(
             identifierType,
           ),
         searchFaq: (query) => searchFaqForAgent(query),
+        humanHandoffAvailable: isHumanHandoffConfigured(),
         onToolUse: (toolName) =>
           markIncomingAgentToolUse(
             incomingMessage.id,
@@ -240,13 +283,26 @@ export async function processAutomaticReply(
     }
 
     const destination = await getReplyDestination(incomingMessage.from);
-    const messageId = await sendWhatsAppReply(destination, reply);
+    const replyText =
+      typeof reply === "string" ? reply : HUMAN_HANDOFF_OFFER_TEXT;
+    const messageId =
+      typeof reply === "string"
+        ? await sendWhatsAppReply(destination, reply)
+        : await sendHumanHandoffOffer(destination);
 
     await setIncomingAutoReplyResult(incomingMessage.id, {
       status: "sent",
       messageId,
-      text: reply,
+      text: replyText,
       fallbackReason,
+      ...(typeof reply === "string"
+        ? {}
+        : {
+            handoffOffer: {
+              reason: reply.reason,
+              summary: reply.summary,
+            },
+          }),
     });
 
     if (!fallbackReason) {
@@ -259,6 +315,63 @@ export async function processAutomaticReply(
         error instanceof Error
           ? error.message
           : "The automatic reply failed unexpectedly.",
+    }).catch(() => undefined);
+  }
+}
+
+async function processHumanHandoffConfirmation(
+  incomingMessage: IncomingWhatsAppMessage,
+) {
+  let claimedOfferId: string | undefined;
+
+  try {
+    await markMessageReadAndShowTyping(incomingMessage.id).catch(
+      () => undefined,
+    );
+    await startOrContinueConversation(incomingMessage);
+
+    const offer = await claimHumanHandoffOffer(
+      incomingMessage.from,
+      incomingMessage.contextMessageId,
+    );
+    const destination = await getReplyDestination(incomingMessage.from);
+    let reply: string;
+
+    if (!offer) {
+      reply =
+        "Esta derivación ya fue procesada o venció. Escribí “operador” para iniciar otra.";
+    } else {
+      claimedOfferId = offer.incomingMessageId;
+      const link = buildHumanHandoffLink(offer.summary);
+      reply = `Listo. Tocá este enlace para abrir el chat con un operador:\n${link}`;
+    }
+
+    const messageId = await sendWhatsAppReply(destination, reply);
+
+    if (claimedOfferId) {
+      await completeHumanHandoffOffer(claimedOfferId);
+    }
+
+    await setIncomingAutoReplyResult(incomingMessage.id, {
+      status: "sent",
+      messageId,
+      text: claimedOfferId
+        ? "Te compartí un enlace para continuar con un operador humano."
+        : reply,
+    });
+  } catch (error) {
+    if (claimedOfferId) {
+      await releaseHumanHandoffOffer(claimedOfferId).catch(
+        () => undefined,
+      );
+    }
+
+    await setIncomingAutoReplyResult(incomingMessage.id, {
+      status: "failed",
+      failureReason:
+        error instanceof Error
+          ? error.message
+          : "The human handoff failed unexpectedly.",
     }).catch(() => undefined);
   }
 }

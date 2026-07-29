@@ -4,34 +4,15 @@ import { after } from "next/server";
 import { processAutomaticReply } from "@/lib/whatsapp-auto-reply";
 import {
   addIncomingMessages,
-  type IncomingWhatsAppMessage,
   type WhatsAppStatusUpdate,
   updateOutgoingMessageStatuses,
 } from "@/lib/whatsapp-message-store";
+import { parseIncomingMessages } from "@/lib/whatsapp-webhook-parser";
 
 export const runtime = "nodejs";
 export const maxDuration = 180;
 
-type WhatsAppContact = {
-  profile?: {
-    name?: unknown;
-  };
-  wa_id?: unknown;
-};
-
-type WhatsAppWebhookMessage = {
-  from?: unknown;
-  id?: unknown;
-  timestamp?: unknown;
-  type?: unknown;
-  text?: {
-    body?: unknown;
-  };
-};
-
 type WhatsAppWebhookValue = {
-  contacts?: unknown;
-  messages?: unknown;
   statuses?: unknown;
 };
 
@@ -82,110 +63,6 @@ function hasValidSignature(
     .digest("hex");
 
   return safeCompare(receivedSignature, expectedSignature);
-}
-
-function getMessageText(message: WhatsAppWebhookMessage) {
-  if (
-    message.type === "text" &&
-    message.text &&
-    typeof message.text.body === "string"
-  ) {
-    return message.text.body;
-  }
-
-  const type = typeof message.type === "string" ? message.type : "unknown";
-  return `[${type} message]`;
-}
-
-function parseIncomingMessages(payload: unknown): IncomingWhatsAppMessage[] {
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const webhookPayload = payload as WhatsAppWebhookPayload;
-
-  if (
-    webhookPayload.object !== "whatsapp_business_account" ||
-    !Array.isArray(webhookPayload.entry)
-  ) {
-    return [];
-  }
-
-  const incomingMessages: IncomingWhatsAppMessage[] = [];
-
-  for (const entry of webhookPayload.entry) {
-    if (!entry || typeof entry !== "object") {
-      continue;
-    }
-
-    const changes = (entry as { changes?: unknown }).changes;
-
-    if (!Array.isArray(changes)) {
-      continue;
-    }
-
-    for (const change of changes) {
-      if (!change || typeof change !== "object") {
-        continue;
-      }
-
-      const value = (change as { value?: unknown }).value;
-
-      if (!value || typeof value !== "object") {
-        continue;
-      }
-
-      const webhookValue = value as WhatsAppWebhookValue;
-      const messages = webhookValue.messages;
-      const contacts = Array.isArray(webhookValue.contacts)
-        ? (webhookValue.contacts as WhatsAppContact[])
-        : [];
-
-      if (!Array.isArray(messages)) {
-        continue;
-      }
-
-      for (const rawMessage of messages) {
-        if (!rawMessage || typeof rawMessage !== "object") {
-          continue;
-        }
-
-        const message = rawMessage as WhatsAppWebhookMessage;
-
-        if (
-          typeof message.id !== "string" ||
-          typeof message.from !== "string"
-        ) {
-          continue;
-        }
-
-        const contact = contacts.find(
-          (item) => item && item.wa_id === message.from,
-        );
-        const profileName =
-          contact?.profile && typeof contact.profile.name === "string"
-            ? contact.profile.name
-            : undefined;
-        const unixTimestamp =
-          typeof message.timestamp === "string"
-            ? Number(message.timestamp)
-            : Number.NaN;
-
-        incomingMessages.push({
-          id: message.id,
-          from: message.from,
-          profileName,
-          type: typeof message.type === "string" ? message.type : "unknown",
-          text: getMessageText(message),
-          receivedAt: Number.isFinite(unixTimestamp)
-            ? new Date(unixTimestamp * 1000).toISOString()
-            : new Date().toISOString(),
-        });
-      }
-    }
-  }
-
-  return incomingMessages;
 }
 
 function getStatusFailureReason(status: WhatsAppWebhookStatus) {

@@ -39,6 +39,7 @@ client.
    WHATSAPP_ACCESS_TOKEN=your_temporary_access_token
    WHATSAPP_PHONE_NUMBER_ID=your_test_phone_number_id
    WHATSAPP_API_VERSION=v25.0
+   HUMAN_SUPPORT_PHONE=5491112345678
    WHATSAPP_WEBHOOK_VERIFY_TOKEN=choose_a_long_random_value
    META_APP_SECRET=your_meta_app_secret
    CRON_SECRET=choose_another_long_random_value
@@ -108,6 +109,12 @@ generate duplicate replies because only newly inserted message IDs are
 processed. Before generating the reply, the backend marks the inbound message
 as read and activates WhatsApp's text typing indicator. This gives the sender a
 blue read receipt and visible feedback while Gemini prepares the response.
+
+When `HUMAN_SUPPORT_PHONE` is configured, Gemini can request a human handoff
+after the available support tools cannot resolve a question. The backend sends
+a reply button first. Only after the user confirms does it generate a `wa.me`
+link containing a compact summary of the unresolved request. The phone must be
+in international format; formatting characters are removed by the backend.
 
 ## Conversation memory
 

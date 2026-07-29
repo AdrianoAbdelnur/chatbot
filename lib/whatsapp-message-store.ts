@@ -7,6 +7,8 @@ export type IncomingWhatsAppMessage = {
   type: string;
   text: string;
   receivedAt: string;
+  interactiveReplyId?: string;
+  contextMessageId?: string;
 };
 
 export type WhatsAppDeliveryStatus =
@@ -56,6 +58,10 @@ type IncomingWhatsAppMessageDocument = IncomingWhatsAppMessage & {
     name: string;
     usedAt: string;
   }>;
+  handoffStatus?: "offered" | "processing" | "completed";
+  handoffReason?: string;
+  handoffSummary?: string;
+  handoffUpdatedAt?: string;
 };
 
 type OutgoingWhatsAppMessageDocument = {
@@ -132,6 +138,10 @@ export async function setIncomingAutoReplyResult(
         messageId: string;
         text: string;
         fallbackReason?: string;
+        handoffOffer?: {
+          reason: string;
+          summary: string;
+        };
       }
     | {
         status: "failed";
@@ -154,6 +164,14 @@ export async function setIncomingAutoReplyResult(
               autoReplyMessageId: result.messageId,
               autoReplyText: result.text,
               autoReplyFallbackUsed: Boolean(result.fallbackReason),
+              ...(result.handoffOffer
+                ? {
+                    handoffStatus: "offered" as const,
+                    handoffReason: result.handoffOffer.reason,
+                    handoffSummary: result.handoffOffer.summary,
+                    handoffUpdatedAt: new Date().toISOString(),
+                  }
+                : {}),
               ...(result.fallbackReason
                 ? { autoReplyFailureReason: result.fallbackReason }
                 : {}),
@@ -167,6 +185,93 @@ export async function setIncomingAutoReplyResult(
           ? {}
           : { $unset: { autoReplyFailureReason: "" } }
         : {}),
+    },
+  );
+}
+
+export async function claimHumanHandoffOffer(
+  from: string,
+  offerMessageId?: string,
+) {
+  const database = await getMongoDatabase();
+  const collection = database.collection<IncomingWhatsAppMessageDocument>(
+    INCOMING_COLLECTION_NAME,
+  );
+  const offer = await collection.findOne(
+    {
+      from,
+      handoffStatus: "offered",
+      handoffSummary: { $type: "string" },
+      ...(offerMessageId ? { autoReplyMessageId: offerMessageId } : {}),
+    },
+    {
+      sort: { receivedAt: -1 },
+    },
+  );
+
+  if (!offer || typeof offer.handoffSummary !== "string") {
+    return null;
+  }
+
+  const result = await collection.updateOne(
+    {
+      _id: offer._id,
+      handoffStatus: "offered",
+    },
+    {
+      $set: {
+        handoffStatus: "processing",
+        handoffUpdatedAt: new Date().toISOString(),
+      },
+    },
+  );
+
+  if (result.modifiedCount !== 1) {
+    return null;
+  }
+
+  return {
+    incomingMessageId: offer._id,
+    summary: offer.handoffSummary,
+  };
+}
+
+export async function completeHumanHandoffOffer(incomingMessageId: string) {
+  const database = await getMongoDatabase();
+  const collection = database.collection<IncomingWhatsAppMessageDocument>(
+    INCOMING_COLLECTION_NAME,
+  );
+
+  await collection.updateOne(
+    {
+      _id: incomingMessageId,
+      handoffStatus: "processing",
+    },
+    {
+      $set: {
+        handoffStatus: "completed",
+        handoffUpdatedAt: new Date().toISOString(),
+      },
+    },
+  );
+}
+
+export async function releaseHumanHandoffOffer(incomingMessageId: string) {
+  const database = await getMongoDatabase();
+  const collection = database.collection<IncomingWhatsAppMessageDocument>(
+    INCOMING_COLLECTION_NAME,
+  );
+
+  await collection.updateOne(
+    {
+      _id: incomingMessageId,
+      handoffStatus: "processing",
+    },
+    {
+      $set: {
+        handoffStatus: "offered",
+        handoffUpdatedAt: new Date().toISOString(),
+      },
     },
   );
 }
