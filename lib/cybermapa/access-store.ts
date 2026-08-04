@@ -1,4 +1,4 @@
-import { getMongoDatabase } from "@/lib/mongodb";
+import { getMongoDatabase } from "../mongodb.ts";
 
 import { normalizeVehiclePlate } from "./normalizers.ts";
 
