@@ -1,0 +1,52 @@
+schema: spec-driven
+
+context: |
+  Next.js 16 App Router + React 19 + TypeScript, Node >=22.6.0, ESM ("type": "module").
+  Domains under lib/: certificates, cybermapa, faq, offline-monitoring.
+  API routes under app/api/whatsapp (send, webhook, messages) and app/api/cron.
+  MongoDB (official driver) for persistence; WhatsApp Cloud API; Gemini for
+  experimental auto-replies. Secrets are server-only, never exposed to the browser.
+
+strict_tdd: true
+
+testing:
+  test_command: "npm test"
+  test_runner: "node --test --experimental-strip-types tests/*.test.mjs"
+  lint_command: "npm run lint"
+  build_command: "npm run build"
+  coverage: false
+  conventions:
+    - "Test files live flat under tests/*.test.mjs, one per feature/module, kebab-case matching the source module (e.g. certificate-eligibility.test.mjs <-> lib/certificates/eligibility.ts)."
+    - "Tests import source .ts files directly with .ts specifiers, enabled by --experimental-strip-types; no build step needed."
+    - "Assertions use node:assert/strict only (assert.equal, assert.deepEqual, assert.throws, assert.ok). No expect-style library."
+    - "No mocking library. Dependencies are injected as plain object literals (fakes/stubs) via factory functions, e.g. createDependencies(...) returning async fns; call args are captured by pushing into arrays inside the fake."
+    - "No beforeEach/afterEach hooks. Setup/teardown is inline per test; env var mutations are wrapped in try/finally to restore the original value."
+    - "Time-dependent logic uses a fixed const NOW = new Date(...) plus small helper functions for relative offsets (timezone-aware when the source system reports local time, e.g. Argentina offset for Cybermapa)."
+    - "Local builder helpers (e.g. buildFeatures, buildServiceRecords, evaluate) are colocated at the top of the test file to keep test bodies declarative."
+    - "Test titles are full descriptive sentences using flat test(\"...\", () => {}) / test(\"...\", async () => {}) — no describe/it nesting."
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Never propose exposing WhatsApp tokens, Meta secrets, MongoDB credentials, or Gemini keys to the browser
+    - Preserve existing route contracts unless the change explicitly agrees to break them
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows (webhook, send, auto-reply)
+    - Document architecture decisions with rationale
+    - Check node_modules/next/dist/docs/ before proposing Next.js 16 API usage; do not rely solely on prior training knowledge
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns (screaming architecture under lib/{domain})
+    tdd: true
+    test_command: "npm test"
+  verify:
+    test_command: "npm test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

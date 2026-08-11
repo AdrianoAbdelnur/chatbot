@@ -1,6 +1,8 @@
 import { getMongoDatabase } from "../mongodb.ts";
+import type { Filter } from "mongodb";
 
 import type {
+  DispatchScope,
   IncidentReconciliationResult,
   MonitoringSystem,
   OfflineIncidentForNotification,
@@ -27,6 +29,11 @@ type OfflineIncidentDocument = {
   initialNotificationId?: string;
   notificationAssignedAt?: string;
   notifiedAt?: string;
+  authorizedAt?: string;
+  authorizedBy?: {
+    id: string;
+    name: string;
+  };
 };
 
 let incidentIndexesPromise: Promise<string[]> | null = null;
@@ -54,18 +61,24 @@ async function ensureIncidentIndexes() {
   await incidentIndexesPromise;
 }
 
-export async function listUnnotifiedActiveOfflineIncidents(): Promise<
-  OfflineIncidentForNotification[]
-> {
+export function buildDispatchEligibilityFilter(scope: DispatchScope = {}) {
+  return {
+    active: true,
+    initialNotificationId: { $exists: false },
+    authorizedAt: { $type: "string" },
+    ...(scope.companyName ? { companyName: scope.companyName } : {}),
+  } satisfies Filter<OfflineIncidentDocument>;
+}
+
+export async function listUnnotifiedActiveOfflineIncidents(
+  scope: DispatchScope = {},
+): Promise<OfflineIncidentForNotification[]> {
   await ensureIncidentIndexes();
 
   const database = await getMongoDatabase();
   const documents = await database
     .collection<OfflineIncidentDocument>(OFFLINE_INCIDENT_COLLECTION_NAME)
-    .find({
-      active: true,
-      initialNotificationId: { $exists: false },
-    })
+    .find(buildDispatchEligibilityFilter(scope))
     .sort({ companyName: 1, detectedAt: 1, plate: 1 })
     .toArray();
 

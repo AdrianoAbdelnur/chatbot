@@ -8,6 +8,7 @@ import {
   getVehicleStatusForAgent,
   listAuthorizedVehiclesForAgent,
 } from "@/lib/cybermapa/agent-tools";
+import { issueCoverageCertificates } from "@/lib/certificates/certificate-service";
 import {
   getConversationSummaryWork,
   getPreviousConversationContext,
@@ -240,6 +241,9 @@ export async function processAutomaticReply(
         },
       ],
     );
+    // Resolved before the model runs: the certificate tool delivers the PDF
+    // itself while the reply is still being generated.
+    const destination = await getReplyDestination(incomingMessage.from);
     let reply: GeminiReply;
     let fallbackReason: string | undefined;
 
@@ -265,6 +269,13 @@ export async function processAutomaticReply(
             identifierType,
           ),
         searchFaq: (query) => searchFaqForAgent(query),
+        issueCoverageCertificates: (plates, confirmedPartialIssue) =>
+          issueCoverageCertificates({
+            senderPhone: incomingMessage.from,
+            destination,
+            requestedPlates: plates,
+            allowPartial: confirmedPartialIssue,
+          }),
         humanHandoffAvailable: isHumanHandoffConfigured(),
         onToolUse: (toolName) =>
           markIncomingAgentToolUse(
@@ -282,7 +293,6 @@ export async function processAutomaticReply(
           : "Gemini failed unexpectedly.";
     }
 
-    const destination = await getReplyDestination(incomingMessage.from);
     const replyText =
       typeof reply === "string" ? reply : HUMAN_HANDOFF_OFFER_TEXT;
     const messageId =

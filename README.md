@@ -231,7 +231,10 @@ Argentina local time. This phase does not send WhatsApp messages.
 ### Preview grouped offline notifications
 
 The notification command groups active, unnotified incidents by company and
-limits each template message to ten vehicles. It only prints a safe preview by
+limits each template message to ten vehicles. It only previews and sends
+incidents that an operator has explicitly authorized from the offline board:
+an incident without an `authorizedAt` timestamp is never eligible for dispatch,
+and this applies equally to the daily cron. It only prints a safe preview by
 default:
 
 ```bash
@@ -251,6 +254,26 @@ send the same initial incident notification again. Explicit Meta rejections are
 stored as retryable and release their incident assignments for a later attempt.
 Ambiguous transport failures remain reserved to avoid sending a possible
 duplicate.
+
+### Authorize offline notifications from the operator board
+
+Dispatch is gated on explicit human authorization. Operators are attribution-only
+records in `gps_operators` — no credentials, no sessions. Seed a sample directory
+with:
+
+```bash
+npm run offline:operators:seed
+```
+
+`POST /api/offline-board/authorize` with `{ operatorId, incidentIds }` stamps
+`authorizedAt` and `authorizedBy` on the selected incidents, appends one
+`authorization` event per incident to `gps_offline_incident_events`, and then
+runs one company-scoped dispatch per distinct company, sequentially. Every
+operator action is recorded in the append-only audit collection.
+
+These routes carry no login, session, or role check. Restrict access externally
+(for example Vercel deployment protection or an IP allowlist) before using the
+board with real data.
 
 ### Run offline monitoring daily in Vercel
 

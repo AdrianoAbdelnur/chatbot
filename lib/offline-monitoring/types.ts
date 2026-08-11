@@ -1,4 +1,13 @@
+import type { OfflineOperationalStatus } from "./operational-status.ts";
+
+export type { OfflineOperationalStatus };
+
 export type MonitoringSystem = "CYBERMAPA";
+
+export type OperatorActor = {
+  id: string;
+  name: string;
+};
 
 export type CompanyContact = {
   id: string;
@@ -33,6 +42,88 @@ export type OfflineIncidentForNotification = {
   companyName: string;
   plate: string;
   lastReportedAt: string;
+};
+
+export type DispatchScope = {
+  companyName?: string;
+};
+
+export type OfflineIncidentAuditAction =
+  | "status_change"
+  | "comment_change"
+  | "recheck"
+  | "authorization";
+
+export type OfflineIncidentAuditOutcome =
+  | "applied"
+  | "no_change"
+  | "upstream_failure";
+
+export type OfflineIncidentAuditEvent = {
+  incidentId: string;
+  action: OfflineIncidentAuditAction;
+  actor: OperatorActor;
+  before?: string | null;
+  after?: string | null;
+  outcome?: OfflineIncidentAuditOutcome;
+  createdAt: string;
+};
+
+export type WhatsappQueryState =
+  | "not_authorized"
+  | "authorized_not_sent"
+  | "dispatching"
+  | "sent"
+  | "failed";
+
+export type OfflineBoardIncident = {
+  id: string;
+  system: MonitoringSystem;
+  companyName: string;
+  plate: string;
+  lastReportedAt: string;
+  authorizedAt?: string;
+  initialNotificationId?: string;
+  operationalStatus?: OfflineOperationalStatus;
+  operatorComment?: string;
+  reviewedAt?: string;
+  reviewedBy?: OperatorActor;
+};
+
+export type OfflineBoardCustomerReply = {
+  text: string;
+  receivedAt: string;
+};
+
+export type OfflineBoardNotification = {
+  status: "pending" | "accepted" | "failed" | "cancelled";
+  failureReason?: string;
+  customerReply?: OfflineBoardCustomerReply;
+};
+
+export type OfflineBoardRow = {
+  id: string;
+  system: MonitoringSystem;
+  companyName: string;
+  plate: string;
+  lastReportedAt: string;
+  offlineHours: number;
+  operationalStatus: OfflineOperationalStatus | null;
+  operatorComment: string | null;
+  reviewedAt: string | null;
+  reviewedBy: OperatorActor | null;
+  authorizedAt: string | null;
+  whatsappQueryState: WhatsappQueryState;
+  whatsappFailureReason: string | null;
+  whatsappCustomerReply: OfflineBoardCustomerReply | null;
+};
+
+export type SafeDispatchSummary = {
+  companyName: string;
+  notificationCount: number;
+  acceptedCount: number;
+  failedCount: number;
+  skippedDuplicateCount: number;
 };
 
 export type OfflineNotificationPreview = {
