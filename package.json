@@ -16,6 +16,7 @@
     "offline:check": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/check-offline-vehicles.ts",
     "offline:contact:upsert": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/upsert-gps-company-contact.ts",
     "offline:notify": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/notify-offline-vehicles.ts",
+    "offline:operators:seed": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/seed-offline-operators.ts",
     "certificates:seed": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/seed-vehicle-service-features.ts",
     "certificates:preview": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/preview-certificate.ts",
     "certificates:send": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/send-test-certificate.ts"

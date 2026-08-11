@@ -8,7 +8,7 @@ import {
   markOfflineNotificationFailed,
   reserveOfflineNotification,
 } from "./notification-store.ts";
-import type { OfflineNotificationPreview } from "./types.ts";
+import type { DispatchScope, OfflineNotificationPreview } from "./types.ts";
 import {
   getOfflineTemplateConfig,
   getOfflineTemplateIdentity,
@@ -58,11 +58,11 @@ function toSafeFailure(preview: OfflineNotificationPreview, reason: string) {
 }
 
 export async function runOfflineNotificationDispatch(
-  options: { send?: boolean } = {},
+  options: { send?: boolean; scope?: DispatchScope } = {},
   dependencies: OfflineNotificationDependencies = defaultDependencies,
 ) {
   const [incidents, contacts] = await Promise.all([
-    dependencies.listIncidents(),
+    dependencies.listIncidents(options.scope),
     dependencies.listContacts(),
   ]);
   const plan = createOfflineNotificationPreviews(incidents, contacts);
