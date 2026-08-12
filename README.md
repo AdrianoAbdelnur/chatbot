@@ -367,3 +367,18 @@ npm test
 npm run lint
 npm run build
 ```
+
+### Mongo integration tests
+
+Mongo integration tests are opt-in and never use `MONGODB_URI`. Set
+`MONGO_INTEGRATION_TEST_URI` to a dedicated non-production MongoDB deployment,
+then run:
+
+```bash
+npm run test:integration
+```
+
+Each run creates and removes a randomly named database prefixed with
+`offline_monitoring_test_`. The harness refuses to clean any other database.
+Without the test-only URI, the command prints an explicit prerequisite message
+and does not claim that Mongo behavior was tested.

@@ -1,0 +1,26 @@
+name: Integration tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - name: Run Mongo integration tests when the dedicated URI is configured
+        if: ${{ secrets.MONGO_INTEGRATION_TEST_URI != '' }}
+        env:
+          MONGO_INTEGRATION_TEST_URI: ${{ secrets.MONGO_INTEGRATION_TEST_URI }}
+        run: npm run test:integration

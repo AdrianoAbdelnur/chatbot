@@ -69,11 +69,16 @@ Every child PR MUST show only its work unit. If earlier work appears in a child 
 
 ## Phase 0: Apply Gates and Test Infrastructure — Work Unit 0
 
-- [ ] 0.1 Apply the selected `feature-branch-chain` strategy exactly as recorded above; verify the tracker targets `main` as draft/no-merge, Work Unit 0 targets the tracker, Work Unit 1 targets Work Unit 0, and every later work-unit PR targets its immediate predecessor. Never mix strategies or create a direct-to-main work-unit PR. [Review guard]
-- [ ] 0.2 Inspect `git status`, preserve all pre-existing user changes, and record a baseline by running `npm test`, `npm run lint`, and `npm run build`. **Verify:** failures are documented before RED tests are introduced; no unrelated file is modified. [Project invariant]
-- [ ] 0.3 Add an opt-in Mongo integration-test harness under `tests/integration/` that connects only through a dedicated test URI, creates a random database whose name has a hard-coded test prefix, and refuses cleanup outside that prefix. Add a separate `test:integration` script; do not make ordinary unit tests contact MongoDB. **Verify:** a harness self-test proves isolated database creation/cleanup and proves the destructive guard rejects a non-test database name. [REG, HIS, RESP]
-- [ ] 0.4 Document the test-only Mongo prerequisite without exposing credentials and wire CI/local verification to run the integration suite when the test URI is available. **Verify:** a missing URI produces an explicit integration-test prerequisite result rather than silently claiming Mongo behavior was tested. [REG, HIS, RESP]
+- [x] 0.1 Apply the selected `feature-branch-chain` strategy exactly as recorded above; verify the tracker targets `main` as draft/no-merge, Work Unit 0 targets the tracker, Work Unit 1 targets Work Unit 0, and every later work-unit PR targets its immediate predecessor. Never mix strategies or create a direct-to-main work-unit PR. [Review guard]
+- [x] 0.2 Inspect `git status`, preserve all pre-existing user changes, and record a baseline by running `npm test`, `npm run lint`, and `npm run build`. **Verify:** failures are documented before RED tests are introduced; no unrelated file is modified. [Project invariant]
+- [x] 0.3 Add an opt-in Mongo integration-test harness under `tests/integration/` that connects only through a dedicated test URI, creates a random database whose name has a hard-coded test prefix, and refuses cleanup outside that prefix. Add a separate `test:integration` script; do not make ordinary unit tests contact MongoDB. **Verify:** a harness self-test proves isolated database creation/cleanup and proves the destructive guard rejects a non-test database name. [REG, HIS, RESP]
+- [x] 0.4 Document the test-only Mongo prerequisite without exposing credentials and wire CI/local verification to run the integration suite when the test URI is available. **Verify:** a missing URI produces an explicit integration-test prerequisite result rather than silently claiming Mongo behavior was tested. [REG, HIS, RESP]
 
+### Work Unit 0 Apply Progress
+
+- Baseline before RED: `npm test` (163 passing), `npm run lint`, and `npm run build` passed.
+- Mongo integration execution: skipped explicitly because `MONGO_INTEGRATION_TEST_URI` is not configured; no Mongo behavior is claimed as verified.
+- TDD evidence: 0.3 RED failed with the expected missing harness module; GREEN passed 2 harness tests; REFACTOR removed redundant database casts with tests green. 0.4 RED failed with the expected missing opt-in predicate; GREEN passed 3 harness tests; REFACTOR kept the runner dependent on the shared predicate with tests green.
 ## Phase 1: Registry Schema and Vehicle Identity — Work Unit 1
 
 - [ ] 1.1 **RED — identity rules:** create `tests/offline-monitoring-registry-identity.test.mjs` with failing cases for `_id = CYBERMAPA:<normalizedPlate>`, duplicate normalized plates, changed non-empty `gpsId`, company moves, missing plate, and conflict fail-closed behavior. **Verify RED:** run only this file and confirm failures are caused by missing identity/catalog behavior. [REG: persistent membership; migration]
