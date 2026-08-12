@@ -27,6 +27,40 @@ export type OfflineMonitoringCatalogVehicle = {
   companyName: string;
 };
 
+export type OfflineCheckOutcomeKind =
+  | "reporting"
+  | "delayed"
+  | "missing"
+  | "invalid"
+  | "failure";
+
+export type OfflineCheckExecutionStatus =
+  | "running"
+  | "completed"
+  | "partial"
+  | "failed";
+
+export type OfflineCheckVehicleTarget = {
+  vehicleId: string;
+  companyKey: string;
+  plate?: string;
+  companyName?: string;
+};
+
+export type OfflineCheckOutcome = {
+  vehicleId: string;
+  outcome: OfflineCheckOutcomeKind;
+  observation?: VehicleMonitoringObservation;
+  error?: string;
+};
+
+export type OfflineCheckExecutionSummary = {
+  requestedCount: number;
+  outcomeCount: number;
+  counts: Record<OfflineCheckOutcomeKind, number>;
+  status: Exclude<OfflineCheckExecutionStatus, "running">;
+};
+
 export type OperatorActor = {
   id: string;
   name: string;
