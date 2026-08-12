@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 
 import { MongoClient, type Db } from "mongodb";
 
-export const TEST_DATABASE_PREFIX = "offline_monitoring_test_";
+// MongoDB database names are limited to 38 bytes. Keep this safety prefix
+// short enough for the random suffix while remaining unmistakable.
+export const TEST_DATABASE_PREFIX = "om_it_";
 
 export type MongoIntegrationClient = Pick<MongoClient, "close" | "db">;
 
