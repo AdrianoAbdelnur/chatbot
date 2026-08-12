@@ -55,6 +55,7 @@ function registryValidator() {
         firstSeenAt: { bsonType: "date" },
         lastSeenAt: { bsonType: "date" },
         schemaVersion: { bsonType: "int" },
+        migrationInitialized: { bsonType: "bool" },
       },
     },
   };
@@ -140,6 +141,15 @@ export function createRegistryStore(database: Db) {
     return (await lookup(identity.vehicleId))!;
   }
 
+  async function initializeLegacyMembership(input: OfflineMonitoringCatalogVehicle) {
+    await ensureSchema();
+    const vehicle = await upsertCatalogVehicle(input);
+    await collection.updateOne(
+      { _id: vehicle.vehicleId, migrationInitialized: { $ne: true } },
+      { $set: { enabled: true, migrationInitialized: true } },
+    );
+  }
+
   async function markUnseen(vehicleIds: string[]) {
     await ensureSchema();
     await collection.updateMany(
@@ -180,6 +190,7 @@ export function createRegistryStore(database: Db) {
     ensureSchema,
     lookup,
     upsertCatalogVehicle,
+    initializeLegacyMembership,
     markUnseen,
     listByCompany,
     listEnabled,
