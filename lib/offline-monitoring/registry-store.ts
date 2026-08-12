@@ -6,6 +6,11 @@ import type {
   OfflineMonitoringRegistryVehicle,
 } from "./types.ts";
 
+type RegistryCatalogIdentity = Pick<
+  OfflineMonitoringRegistryVehicle,
+  "vehicleId" | "system" | "plate" | "gpsId" | "companyName" | "companyKey" | "identityStatus"
+>;
+
 export const OFFLINE_MONITORING_REGISTRY_COLLECTION_NAME =
   "gps_offline_monitoring_registry";
 
@@ -102,12 +107,15 @@ export function createRegistryStore(database: Db) {
     return document ? toRegistryVehicle(document) : null;
   }
 
-  async function upsertCatalogVehicle(input: OfflineMonitoringCatalogVehicle) {
+  async function upsertCatalogVehicle(
+    input: OfflineMonitoringCatalogVehicle,
+    suppliedIdentity?: RegistryCatalogIdentity,
+  ) {
     await ensureSchema();
     const existing = await collection.findOne({
       _id: `CYBERMAPA:${input.plate.trim().toUpperCase().replace(/[^A-Z0-9]/g, "")}`,
     });
-    const identity = evaluateRegistryIdentity({
+    const identity = suppliedIdentity ?? evaluateRegistryIdentity({
       incoming: input,
       existing: existing
         ? {
@@ -167,6 +175,15 @@ export function createRegistryStore(database: Db) {
     return documents.map(toRegistryVehicle);
   }
 
+  async function listCurrent() {
+    await ensureSchema();
+    const documents = await collection
+      .find({ present: true })
+      .sort({ companyName: 1, plate: 1 })
+      .toArray();
+    return documents.map(toRegistryVehicle);
+  }
+
   async function listEnabled() {
     await ensureSchema();
     const documents = await collection
@@ -192,6 +209,7 @@ export function createRegistryStore(database: Db) {
     upsertCatalogVehicle,
     initializeLegacyMembership,
     markUnseen,
+    listCurrent,
     listByCompany,
     listEnabled,
     setMembership,

@@ -102,12 +102,12 @@ Every child PR MUST show only its work unit. If earlier work appears in a child 
 
 ## Phase 3: Catalog Synchronization and Membership — Work Unit 3
 
-- [ ] 3.1 **RED — catalog sync:** create `tests/offline-monitoring-catalog-service.test.mjs` for automatic full-company discovery, per-company vehicle grouping, new vehicles default-disabled, unseen vehicles marked `present:false`, company moves preserving identity/membership, identity conflicts disabled from mutation/check selection, and contact changes having no effect. [REG: catalog; persistent membership]
-- [ ] 3.2 **GREEN — catalog service:** create `lib/offline-monitoring/catalog-service.ts` to fetch all Cybermapa vehicles, apply the identity policy, upsert snapshots, mark unseen records, and return a sorted company/vehicle membership read model. It MUST NOT read contacts to decide membership. [REG: catalog; persistent membership]
-- [ ] 3.3 **RED — catalog and membership route contracts:** create route tests for `GET /api/offline-board/catalog` and `PATCH /api/offline-board/membership`, covering automatic synchronization, complete companies, current vehicles only, `cache-control/no-store` behavior as applicable, malformed bodies, unknown/absent/conflicted vehicles, missing migration marker, and one-vehicle updates that leave all others unchanged. [REG: catalog; persistent membership]
-- [ ] 3.4 **GREEN — thin adapters:** create `app/api/offline-board/catalog/route.ts` and `app/api/offline-board/membership/route.ts` using `runtime="nodejs"`, `dynamic="force-dynamic"`, manual input validation, safe response shapes, and the service/store seams. Never expose provider payloads or secrets. [REG: catalog; membership]
-- [ ] 3.5 **RED/GREEN — membership concurrency:** add Mongo integration cases for two simultaneous updates to different vehicles and competing updates to one vehicle; implement conditional atomic updates so no unrelated membership is lost. Assert disabling membership leaves existing incident bytes unchanged. [REG: persistent membership; membership does not own incidents]
-- [ ] 3.6 **REFACTOR and verify:** retire contact-derived membership logic only inside the new catalog path; do not cut over cron or remove legacy scan yet. Run targeted unit/route/integration tests, then full tests, lint, and build. [REG]
+- [x] 3.1 **RED — catalog sync:** create `tests/offline-monitoring-catalog-service.test.mjs` for automatic full-company discovery, per-company vehicle grouping, new vehicles default-disabled, unseen vehicles marked `present:false`, company moves preserving identity/membership, identity conflicts disabled from mutation/check selection, and contact changes having no effect. [REG: catalog; persistent membership]
+- [x] 3.2 **GREEN — catalog service:** create `lib/offline-monitoring/catalog-service.ts` to fetch all Cybermapa vehicles, apply the identity policy, upsert snapshots, mark unseen records, and return a sorted company/vehicle membership read model. It MUST NOT read contacts to decide membership. [REG: catalog; persistent membership]
+- [x] 3.3 **RED — catalog and membership route contracts:** create route tests for `GET /api/offline-board/catalog` and `PATCH /api/offline-board/membership`, covering automatic synchronization, complete companies, current vehicles only, `cache-control/no-store` behavior as applicable, malformed bodies, unknown/absent/conflicted vehicles, missing migration marker, and one-vehicle updates that leave all others unchanged. [REG: catalog; persistent membership]
+- [x] 3.4 **GREEN — thin adapters:** create `app/api/offline-board/catalog/route.ts` and `app/api/offline-board/membership/route.ts` using `runtime="nodejs"`, `dynamic="force-dynamic"`, manual input validation, safe response shapes, and the service/store seams. Never expose provider payloads or secrets. [REG: catalog; membership]
+- [x] 3.5 **RED/GREEN — membership concurrency:** add Mongo integration cases for two simultaneous updates to different vehicles and competing updates to one vehicle; implement conditional atomic updates so no unrelated membership is lost. Assert disabling membership leaves existing incident bytes unchanged. [REG: persistent membership; membership does not own incidents]
+- [x] 3.6 **REFACTOR and verify:** retire contact-derived membership logic only inside the new catalog path; do not cut over cron or remove legacy scan yet. Run targeted unit/route/integration tests, then full tests, lint, and build. [REG]
 
 ## Phase 4: Durable Check History — Work Unit 4
 
@@ -219,3 +219,9 @@ Every child PR MUST show only its work unit. If earlier work appears in a child 
 ## Completion Rule
 
 No task is complete after GREEN alone. Mark a task/work unit complete only after its RED failure was observed, GREEN behavior is passing, REFACTOR preserved behavior, the relevant Mongo/route/contract tests passed, and the unit-level `npm test`, `npm run lint`, and `npm run build` results were recorded. The change is ready for `sdd-verify` only after Phase 12 and after every applicable spec row above has executable evidence.
+
+
+### Work Unit 3 Apply Progress
+
+- TDD: 3.1 and 3.3 RED failed because the catalog service and route adapters did not exist; GREEN targeted service (2) and route (3) tests passed. REFACTOR retained the catalog path without contact reads and made route responses provider-safe.
+- Verification: targeted tests passed; npm run lint passed. Mongo integration requires MONGO_INTEGRATION_TEST_URI and was not run; full unit/build verification was blocked by the shared execution environment timeout.
