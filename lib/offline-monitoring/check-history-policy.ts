@@ -69,7 +69,9 @@ export function calculateExecutionSummary(
   const counts = Object.fromEntries(outcomeKinds.map((kind) => [kind, 0])) as Record<OfflineCheckOutcomeKind, number>;
   for (const outcome of unique.values()) counts[outcome.outcome] += 1;
   const outcomeCount = unique.size;
-  const status = outcomeCount < requested.length
+  const status = requested.length === 0
+    ? "completed"
+    : outcomeCount < requested.length
     ? "partial"
     : counts.failure === requested.length
       ? "failed"

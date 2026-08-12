@@ -58,3 +58,29 @@ test("history policy rejects unsupported outcome kinds and observations", () => 
     /unsupported outcome/,
   );
 });
+
+test("history policy records an empty successful run and ignores repeated outcome writes", () => {
+  const requested = normalizeRequestedVehicles([]);
+  assert.deepEqual(calculateExecutionSummary(requested, []), {
+    requestedCount: 0,
+    outcomeCount: 0,
+    counts: { reporting: 0, delayed: 0, missing: 0, invalid: 0, failure: 0 },
+    status: "completed",
+  });
+
+  const one = { vehicleId: "CYBERMAPA:AB123CD", outcome: "missing" };
+  assert.equal(
+    calculateExecutionSummary([{ vehicleId: one.vehicleId, companyKey: "ACME" }], [one, one]).outcomeCount,
+    1,
+  );
+});
+
+test("history policy rejects outcomes outside the requested scope", () => {
+  assert.throws(
+    () => calculateExecutionSummary(
+      [{ vehicleId: "CYBERMAPA:AB123CD", companyKey: "ACME" }],
+      [{ vehicleId: "CYBERMAPA:AC123CD", outcome: "missing" }],
+    ),
+    /outside requested scope/,
+  );
+});
