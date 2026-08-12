@@ -44,3 +44,28 @@ test("registry store rejects malformed documents and preserves membership during
     },
   });
 });
+
+test("registry membership updates are atomic and never mutate unrelated incident bytes", async () => {
+  await withIsolatedMongoDatabase({
+    uri: getMongoIntegrationTestUri(),
+    run: async (database) => {
+      const store = createRegistryStore(database);
+      await Promise.all([
+        store.upsertCatalogVehicle({ system: "CYBERMAPA", plate: "AB123CD", gpsId: "gps-1", companyName: "Company" }),
+        store.upsertCatalogVehicle({ system: "CYBERMAPA", plate: "AC123CD", gpsId: "gps-2", companyName: "Company" }),
+      ]);
+      const incidents = database.collection("gps_offline_incidents");
+      await incidents.insertOne({ _id: "incident-1", bytes: "unchanged" });
+      await Promise.all([
+        store.setMembership("CYBERMAPA:AB123CD", true),
+        store.setMembership("CYBERMAPA:AC123CD", true),
+      ]);
+      await Promise.all([
+        store.setMembership("CYBERMAPA:AB123CD", false),
+        store.setMembership("CYBERMAPA:AB123CD", true),
+      ]);
+      assert.equal((await store.lookup("CYBERMAPA:AC123CD")).enabled, true);
+      assert.equal((await incidents.findOne({ _id: "incident-1" })).bytes, "unchanged");
+    },
+  });
+});
