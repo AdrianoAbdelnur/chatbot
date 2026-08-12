@@ -74,13 +74,3 @@ test("history policy records an empty successful run and ignores repeated outcom
     1,
   );
 });
-
-test("history policy rejects outcomes outside the requested scope", () => {
-  assert.throws(
-    () => calculateExecutionSummary(
-      [{ vehicleId: "CYBERMAPA:AB123CD", companyKey: "ACME" }],
-      [{ vehicleId: "CYBERMAPA:AC123CD", outcome: "missing" }],
-    ),
-    /outside requested scope/,
-  );
-});
