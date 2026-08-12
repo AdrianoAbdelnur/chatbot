@@ -4,6 +4,29 @@ export type { OfflineOperationalStatus };
 
 export type MonitoringSystem = "CYBERMAPA";
 
+export type RegistryIdentityStatus = "ok" | "identityConflict";
+
+export type OfflineMonitoringRegistryVehicle = {
+  vehicleId: string;
+  system: MonitoringSystem;
+  plate: string;
+  gpsId: string | null;
+  companyName: string;
+  companyKey: string;
+  present: boolean;
+  enabled: boolean;
+  identityStatus: RegistryIdentityStatus;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+};
+
+export type OfflineMonitoringCatalogVehicle = {
+  system: MonitoringSystem;
+  plate: string;
+  gpsId?: string | null;
+  companyName: string;
+};
+
 export type OperatorActor = {
   id: string;
   name: string;
