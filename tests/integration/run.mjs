@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 import { isMongoIntegrationUriConfigured } from "../../lib/test-support/mongo-integration.ts";
 
@@ -11,7 +12,7 @@ if (!isMongoIntegrationUriConfigured()) {
 } else {
   const files = (await readdir(new URL(".", import.meta.url)))
     .filter((file) => file.endsWith(".test.mjs"))
-    .map((file) => new URL(file, import.meta.url).pathname);
+    .map((file) => fileURLToPath(new URL(file, import.meta.url)));
   const child = spawn(
     process.execPath,
     ["--test", "--experimental-strip-types", ...files],
