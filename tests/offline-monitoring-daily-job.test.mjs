@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runOfflineMonitoringDailyJob } from "../lib/offline-monitoring/daily-job.ts";
+import { runOfflineMonitoringDailyJob, runRegistryBackedDailyJob } from "../lib/offline-monitoring/daily-job.ts";
 
 test("daily monitoring persists the scan before sending notifications", async () => {
   const calls = [];
@@ -77,4 +77,38 @@ test("notifications are not dispatched when the scan fails", async () => {
       }),
     /Cybermapa unavailable/,
   );
+});
+
+test("registry cron refuses to run before migration and selects enabled conflict-free vehicles", async () => {
+  const calls = [];
+  await assert.rejects(
+    () => runRegistryBackedDailyJob({ scheduledSlot: "2026-08-12T12:00Z" }, {
+      synchronize: async () => { calls.push("sync"); },
+      hasMigrationMarker: async () => false,
+      listEnabled: async () => [],
+      runCheck: async () => { throw new Error("must not run"); },
+      dispatch: async () => { throw new Error("must not dispatch"); },
+    }),
+    /migration is not initialized/,
+  );
+  assert.deepEqual(calls, ["sync"]);
+});
+
+test("registry cron uses a stable slot identity and does not dispatch after total failure", async () => {
+  const calls = [];
+  const result = await runRegistryBackedDailyJob({ scheduledSlot: "2026-08-12T12:00Z" }, {
+    synchronize: async () => calls.push("sync"),
+    hasMigrationMarker: async () => true,
+    listEnabled: async () => [
+      { vehicleId: "CYBERMAPA:AB123CD", companyKey: "ACME", identityStatus: "ok", present: false },
+      { vehicleId: "CYBERMAPA:AC123CD", companyKey: "ACME", identityStatus: "identityConflict", present: true },
+    ],
+    runCheck: async (input) => { calls.push(input); return { status: "failed", requestedCount: 1, outcomeCount: 1 }; },
+    dispatch: async () => { throw new Error("must not dispatch"); },
+  });
+
+  assert.equal(result.executionId, "cron:2026-08-12T12:00Z");
+  assert.equal(result.execution.status, "failed");
+  assert.equal(calls[0], "sync");
+  assert.equal(calls[1].targets[0].vehicleId, "CYBERMAPA:AB123CD");
 });
