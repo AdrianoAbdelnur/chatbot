@@ -19,7 +19,8 @@
     "offline:operators:seed": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/seed-offline-operators.ts",
     "certificates:seed": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/seed-vehicle-service-features.ts",
     "certificates:preview": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/preview-certificate.ts",
-    "certificates:send": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/send-test-certificate.ts"
+    "certificates:send": "node --use-system-ca --env-file=.env.local --experimental-strip-types scripts/send-test-certificate.ts",
+    "test:integration": "node tests/integration/run.mjs"
   },
   "dependencies": {
     "mongodb": "^7.5.0",
