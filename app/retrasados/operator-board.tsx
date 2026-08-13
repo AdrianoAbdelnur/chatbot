@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { MonitoringCatalog, type CatalogCompany, type CatalogVehicle } from "./components/MonitoringCatalog.tsx";
+import { ManualCheckSelection } from "./components/ManualCheckSelection.tsx";
+import { CheckFeedback } from "./components/CheckFeedback.tsx";
+import { IncidentTable } from "./components/IncidentTable.tsx";
+import { clearManualSelection, createManualSelectionState, toggleManualCompany, toggleManualVehicle, type ManualSelectionState } from "../../lib/offline-monitoring/manual-selection-state.ts";
 
 type OperationalStatus =
   | "workshop"
@@ -219,6 +224,13 @@ async function fetchBoardData() {
   };
 }
 
+async function fetchMonitoringCatalog() {
+  const response = await fetch("/api/offline-board/catalog", { cache: "no-store" });
+  if (!response.ok) throw new Error("The monitoring catalog could not be loaded.");
+  const data = (await response.json()) as { companies?: CatalogCompany[] };
+  return Array.isArray(data.companies) ? data.companies : [];
+}
+
 function formatTimestamp(value: string | null) {
   if (!value) {
     return "—";
@@ -250,6 +262,9 @@ export function OperatorBoard() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [catalogCompanies, setCatalogCompanies] = useState<CatalogCompany[]>([]);
+  const [catalogCompanyKey, setCatalogCompanyKey] = useState("");
+  const [manualSelection, setManualSelection] = useState<ManualSelectionState>(createManualSelectionState);
 
   useEffect(() => {
     let isActive = true;
@@ -261,6 +276,7 @@ export function OperatorBoard() {
         if (isActive) {
           setRows(data.rows);
           setOperators(data.operators);
+          try { setCatalogCompanies(await fetchMonitoringCatalog()); } catch { setFeedback({ type: "error", text: "No se pudo cargar el catálogo de monitoreo." }); }
         }
       } catch {
         if (isActive) {
@@ -289,12 +305,37 @@ export function OperatorBoard() {
 
       setRows(data.rows);
       setOperators(data.operators);
+      setCatalogCompanies(await fetchMonitoringCatalog());
     } catch {
       setFeedback({
         type: "error",
         text: "No se pudo actualizar la planilla.",
       });
     }
+  }
+
+  async function updateMembership(vehicle: CatalogVehicle, enabled: boolean) {
+    setBusyAction(`membership:${vehicle.vehicleId}`);
+    try {
+      const response = await fetch("/api/offline-board/membership", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ vehicleId: vehicle.vehicleId, enabled }) });
+      if (!response.ok) throw new Error();
+      setCatalogCompanies((companies) => companies.map((company) => ({ ...company, vehicles: company.vehicles.map((item) => item.vehicleId === vehicle.vehicleId ? { ...item, enabled } : item) })));
+    } catch { setFeedback({ type: "error", text: "No se pudo actualizar la membresía automática." }); }
+    finally { setBusyAction(null); }
+  }
+
+  async function runManualCatalogCheck() {
+    if (!operatorId) { setFeedback({ type: "error", text: "Seleccione un operador antes del chequeo manual." }); return; }
+    setBusyAction("manual-check");
+    try {
+      const vehicles = catalogCompanies.flatMap((company) => company.vehicles.filter((vehicle) => manualSelection.selectedVehicleIds.includes(vehicle.vehicleId)).map((vehicle) => ({ vehicleId: vehicle.vehicleId, companyKey: vehicle.companyKey })));
+      const response = await fetch("/api/offline-board/checks", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify({ operatorId, companyKeys: manualSelection.selectedCompanyKeys, vehicles }) });
+      if (!response.ok) throw new Error();
+      setManualSelection(clearManualSelection(manualSelection));
+      setFeedback({ type: "info", text: "Chequeo manual ejecutado. WhatsApp no se envía automáticamente." });
+      await refreshBoard();
+    } catch { setFeedback({ type: "error", text: "No se pudo ejecutar el chequeo manual." }); }
+    finally { setBusyAction(null); }
   }
 
   function getDraft(row: BoardRow): ReviewDraft {
@@ -565,6 +606,9 @@ export function OperatorBoard() {
 
   return (
     <section className="flex flex-col gap-4">
+      <MonitoringCatalog companies={catalogCompanies} selectedCompanyKey={catalogCompanyKey} onCompanyChange={setCatalogCompanyKey} onMembershipChange={updateMembership} />
+      <ManualCheckSelection companies={catalogCompanies} selectedCompanyKeys={manualSelection.selectedCompanyKeys} selectedVehicleIds={manualSelection.selectedVehicleIds} onCompanyToggle={(key) => setManualSelection((state) => toggleManualCompany(state, key))} onVehicleToggle={(id) => setManualSelection((state) => toggleManualVehicle(state, id))} onSubmit={runManualCatalogCheck} disabled={busyAction !== null} />
+      <CheckFeedback error={feedback?.type === "error" ? feedback.text : undefined} message={feedback?.type === "info" ? feedback.text : undefined} />
       <div className="flex flex-wrap items-end justify-between gap-4 rounded-lg border border-neutral-200 bg-white p-4">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-neutral-800">Operador</span>
@@ -688,7 +732,7 @@ export function OperatorBoard() {
         </ul>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+      <IncidentTable><div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
         <table className="w-full min-w-280 border-collapse text-left text-sm">
           <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-600">
             <tr>
@@ -838,7 +882,7 @@ export function OperatorBoard() {
             )}
           </tbody>
         </table>
-      </div>
+      </div></IncidentTable>
     </section>
   );
 }
